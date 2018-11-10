@@ -330,7 +330,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
 
 #define ROSCONSOLE_DEFINE_LOCATION(cond, level, name) \
   ROSCONSOLE_AUTOINIT; \
-  static ::ros::console::LogLocation __rosconsole_define_location__loc = {false, false, ::ros::console::levels::Count, 0}; /* Initialized at compile-time */ \
+  static ::ros::console::LogLocation __rosconsole_define_location__loc = {false, false, ::ros::console::levels::Count, NULL}; /* Initialized at compile-time */ \
   if (ROS_UNLIKELY(!__rosconsole_define_location__loc.initialized_)) \
   { \
     initializeLogLocation(&__rosconsole_define_location__loc, name, level); \
@@ -346,7 +346,7 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
     ::ros::console::print(filter, __rosconsole_define_location__loc.logger_, __rosconsole_define_location__loc.level_, __FILE__, __LINE__, __ROSCONSOLE_FUNCTION__, __VA_ARGS__)
 
 #define ROSCONSOLE_PRINT_AT_LOCATION(...) \
-    ROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER(0, __VA_ARGS__)
+    ROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER(NULL, __VA_ARGS__)
 
 // inside a macro which uses args use only well namespaced variable names in order to not overlay variables coming in via args
 #define ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(filter, args) \
@@ -358,7 +358,13 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
   } while (0)
 
 #define ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args) \
-    ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(0, args)
+    ROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER(NULL, args)
+
+/**
+ * \brief Used internally in throttle macros to determine if a new message should be logged.
+ * \note If ROS time has moved backwards, will evaluate to true
+ */
+#define ROSCONSOLE_THROTTLE_CHECK(now, last, period) (ROS_UNLIKELY(last + period <= now) || ROS_UNLIKELY(now < last))
 
 /**
  * \brief Log to a given named logger at a given verbosity level, only if a given condition has been met, with printf-style formatting
@@ -441,17 +447,17 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param period The period it should actually trigger at most
+ * \param period The period it should actually trigger at most. If ROS time has moved backwards, it will trigger regardless.
  */
 #define ROS_LOG_THROTTLE(period, level, name, ...) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double last_hit = 0.0; \
-    ::ros::Time now = ::ros::Time::now(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(last_hit + period <= now.toSec())) \
+    double now = ::ros::Time::now().toSec(); \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROSCONSOLE_THROTTLE_CHECK(now, last_hit, period))\
     { \
-      last_hit = now.toSec(); \
+      last_hit = now; \
       ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
     } \
   } while(false)
@@ -462,17 +468,18 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param period The period it should actually trigger at most
+ * \param period The period it should actually trigger at most. If ROS time has moved backwards, it will trigger regardless.
  */
 #define ROS_LOG_STREAM_THROTTLE(period, level, name, args) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
     static double __ros_log_stream_throttle__last_hit__ = 0.0; \
-    ::ros::Time __ros_log_stream_throttle__now__ = ::ros::Time::now(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_throttle__last_hit__ + period <= __ros_log_stream_throttle__now__.toSec())) \
+    double __ros_log_stream_throttle__now__ = ::ros::Time::now().toSec(); \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && \
+        ROSCONSOLE_THROTTLE_CHECK(__ros_log_stream_throttle__now__, __ros_log_stream_throttle__last_hit__, period))\
     { \
-      __ros_log_stream_throttle__last_hit__ = __ros_log_stream_throttle__now__.toSec(); \
+      __ros_log_stream_throttle__last_hit__ = __ros_log_stream_throttle__now__; \
       ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args); \
     } \
   } while(false)
@@ -482,17 +489,18 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param period The period it should actually trigger at most
+ * \param period The period it should actually trigger at most, and the delay before which no message will be shown. If ROS time has moved backwards, it will trigger regardless.
  */
 #define ROS_LOG_DELAYED_THROTTLE(period, level, name, ...) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
-    ::ros::Time __ros_log_delayed_throttle__now__ = ::ros::Time::now(); \
-    static double __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_delayed_throttle__last_hit__ + period <= __ros_log_delayed_throttle__now__.toSec())) \
+    double __ros_log_delayed_throttle__now__ = ::ros::Time::now().toSec(); \
+    static double __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__; \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && \
+        ROSCONSOLE_THROTTLE_CHECK(__ros_log_delayed_throttle__now__, __ros_log_delayed_throttle__last_hit__, period))\
     { \
-      __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__.toSec(); \
+      __ros_log_delayed_throttle__last_hit__ = __ros_log_delayed_throttle__now__; \
       ROSCONSOLE_PRINT_AT_LOCATION(__VA_ARGS__); \
     } \
   } while(false)
@@ -503,17 +511,18 @@ ROSCONSOLE_DECL std::string formatToString(const char* fmt, ...);
  *
  * \param level One of the levels specified in ::ros::console::levels::Level
  * \param name Name of the logger.  Note that this is the fully qualified name, and does NOT include "ros.<package_name>".  Use ROSCONSOLE_DEFAULT_NAME if you would like to use the default name.
- * \param period The period it should actually trigger at most, and the delay before which no message will be shown.
+ * \param period The period it should actually trigger at most, and the delay before which no message will be shown. If ROS time has moved backwards, it will trigger regardless.
  */
 #define ROS_LOG_STREAM_DELAYED_THROTTLE(period, level, name, args) \
   do \
   { \
     ROSCONSOLE_DEFINE_LOCATION(true, level, name); \
-    ::ros::Time __ros_log_stream_delayed_throttle__now__ = ::ros::Time::now(); \
-    static double __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
-    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && ROS_UNLIKELY(__ros_log_stream_delayed_throttle__last_hit__ + period <= __ros_log_stream_delayed_throttle__now__.toSec())) \
+    double __ros_log_stream_delayed_throttle__now__ = ::ros::Time::now().toSec(); \
+    static double __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__; \
+    if (ROS_UNLIKELY(__rosconsole_define_location__enabled) && \
+        ROSCONSOLE_THROTTLE_CHECK(__ros_log_stream_delayed_throttle__now__, __ros_log_stream_delayed_throttle__last_hit__, period)) \
     { \
-      __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__.toSec(); \
+      __ros_log_stream_delayed_throttle__last_hit__ = __ros_log_stream_delayed_throttle__now__; \
       ROSCONSOLE_PRINT_STREAM_AT_LOCATION(args); \
     } \
   } while(false)
