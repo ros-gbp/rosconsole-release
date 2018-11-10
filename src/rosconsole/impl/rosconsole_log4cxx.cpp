@@ -107,7 +107,7 @@ protected:
     }
 #ifdef _MSC_VER
     LOG4CXX_ENCODE_CHAR(tmpstr, event->getMessage());  // has to handle LogString with wchar types.
-    std::string msg = tmpstr  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
+    std::string msg = tmpstr;  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
 #else
     std::string msg = event->getMessage();
 #endif
@@ -171,9 +171,6 @@ void initialize()
   if ( config_file_cstr != NULL ) {
 	  free(config_file_cstr);
   }
-  if ( format_string != NULL ) {
-	  free(format_string);
-  }
   // getenv implementations don't need free'ing.
 #endif
 }
@@ -208,7 +205,7 @@ std::string getName(void* handle)
   const log4cxx::spi::LoggingEvent* event = (const log4cxx::spi::LoggingEvent*)handle;
 #ifdef _MSC_VER
   LOG4CXX_ENCODE_CHAR(tmpstr, event->getLoggerName());  // has to handle LogString with wchar types.
-  return tmpstr  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
+  return tmpstr;  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
 #else
   return event->getLoggerName();
 #endif
@@ -223,11 +220,11 @@ bool get_loggers(std::map<std::string, levels::Level>& loggers)
   log4cxx::LoggerList::iterator end = current_loggers.end();
   for (; it != end; ++it)
   {
-    std::string name;
     #ifdef _MSC_VER
-      LOG4CXX_ENCODE_CHAR(name, (*it)->getName()); // has to handle LogString with wchar types.
+      LOG4CXX_ENCODE_CHAR(tmpstr, (*it)->getName()); // has to handle LogString with wchar types.
+      std::string name = tmpstr;
     #else
-      name = (*it)->getName();
+      std::string name = (*it)->getName();
     #endif
 
     const log4cxx::LevelPtr& log4cxx_level = (*it)->getEffectiveLevel();
@@ -300,6 +297,10 @@ class Log4cxxAppender : public log4cxx::AppenderSkeleton
 {
 public:
   Log4cxxAppender(ros::console::LogAppender* appender) : appender_(appender) {}
+  const ros::console::LogAppender* getAppender() const
+  {
+    return appender_;
+  }
   ~Log4cxxAppender() {}
 
 protected:
@@ -334,7 +335,7 @@ protected:
 
     #ifdef _MSC_VER
       LOG4CXX_ENCODE_CHAR(tmpstr, event->getMessage());  // has to handle LogString with wchar types.
-      std::string msg = tmpstr  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
+      std::string msg = tmpstr;  // tmpstr gets instantiated inside the LOG4CXX_ENCODE_CHAR macro
     #else
       std::string msg = event->getMessage();
     #endif
@@ -348,7 +349,7 @@ protected:
   ros::console::LogAppender* appender_;
 };
 
-Log4cxxAppender* g_log4cxx_appender;
+Log4cxxAppender* g_log4cxx_appender = 0;
 
 void register_appender(LogAppender* appender)
 {
@@ -357,11 +358,23 @@ void register_appender(LogAppender* appender)
   logger->addAppender(g_log4cxx_appender);
 }
 
+void deregister_appender(LogAppender* appender){
+  if(g_log4cxx_appender->getAppender() == appender)
+  {
+    const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
+    logger->removeAppender(g_log4cxx_appender);
+    delete g_log4cxx_appender;
+    g_log4cxx_appender = 0;
+  }
+}
 void shutdown()
 {
-  const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
-  logger->removeAppender(g_log4cxx_appender);
-  g_log4cxx_appender = 0;
+  if(g_log4cxx_appender)
+  {
+    const log4cxx::LoggerPtr& logger = log4cxx::Logger::getLogger(ROSCONSOLE_ROOT_LOGGER_NAME);
+    logger->removeAppender(g_log4cxx_appender);
+    g_log4cxx_appender = 0;
+  }
   // reset this so that the logger doesn't get crashily destroyed
   // again during global destruction.  
   //
