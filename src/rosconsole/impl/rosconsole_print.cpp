@@ -28,6 +28,8 @@
  */
 
 #include "ros/console.h"
+#define ROSCONSOLE_CONSOLE_IMPL_EXPORTS
+#include "ros/console_impl.h"
 
 namespace ros
 {
