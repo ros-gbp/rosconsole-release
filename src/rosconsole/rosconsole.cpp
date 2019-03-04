@@ -34,6 +34,7 @@
 #endif
 
 #include "ros/console.h"
+#include "ros/console_impl.h"
 #include "ros/assert.h"
 #include <ros/time.h>
 
@@ -54,31 +55,6 @@ namespace ros
 {
 namespace console
 {
-namespace impl
-{
-
-void initialize();
-
-void shutdown();
-
-void register_appender(LogAppender* appender);
-
-void deregister_appender(LogAppender* appender);
-
-void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
-
-bool isEnabledFor(void* handle, ::ros::console::Level level);
-
-void* getHandle(const std::string& name);
-
-std::string getName(void* handle);
-
-bool get_loggers(std::map<std::string, levels::Level>& loggers);
-
-bool set_logger_level(const std::string& name, levels::Level level);
-
-} // namespace impl
-
 
 bool g_initialized = false;
 bool g_shutting_down = false;
@@ -461,27 +437,14 @@ void initialize()
 
 void vformatToBuffer(boost::shared_array<char>& buffer, size_t& buffer_size, const char* fmt, va_list args)
 {
-#ifdef _MSC_VER
-  va_list arg_copy = args; // dangerous?
-#else
   va_list arg_copy;
   va_copy(arg_copy, args);
-#endif
-#ifdef _MSC_VER
-  size_t total = vsnprintf_s(buffer.get(), buffer_size, buffer_size, fmt, args);
-#else
   size_t total = vsnprintf(buffer.get(), buffer_size, fmt, args);
-#endif
   if (total >= buffer_size)
   {
     buffer_size = total + 1;
     buffer.reset(new char[buffer_size]);
-
-#ifdef _MSC_VER
-    vsnprintf_s(buffer.get(), buffer_size, buffer_size, fmt, arg_copy);
-#else
     vsnprintf(buffer.get(), buffer_size, fmt, arg_copy);
-#endif
   }
   va_end(arg_copy);
 }
@@ -714,6 +677,11 @@ StaticInit g_static_init;
 void register_appender(LogAppender* appender)
 {
   ros::console::impl::register_appender(appender);
+}
+
+void deregister_appender(LogAppender* appender)
+{
+  ros::console::impl::deregister_appender(appender);
 }
 
 void shutdown() 
