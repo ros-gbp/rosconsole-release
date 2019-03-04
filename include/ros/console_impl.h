@@ -27,55 +27,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ROSCONSOLE_CONSOLE_BACKEND_H
-#define ROSCONSOLE_CONSOLE_BACKEND_H
+#ifndef ROSCONSOLE_CONSOLE_IMPL_H
+#define ROSCONSOLE_CONSOLE_IMPL_H
 
 #include <ros/macros.h>
+#include "ros/console.h"
+
+// export interface functions shared by all impl instances in one single header
+// since CMake would not help define custome flag like ROSCONSOLE_CONSOLE_IMPL_EXPORTS,
+// the ROSCONSOLE_CONSOLE_IMPL_EXPORTS macro needs to be defined
+// in the impl code (e.g. rosconsole_log4css.cpp) before including this header
 
 // Import/export for windows dll's and visibility for gcc shared libraries.
 #ifdef ROS_BUILD_SHARED_LIBS // ros is being built around shared libraries
-  #ifdef rosconsole_backend_interface_EXPORTS // we are building a shared lib/dll
-    #define ROSCONSOLE_BACKEND_DECL ROS_HELPER_EXPORT
+  #ifdef ROSCONSOLE_CONSOLE_IMPL_EXPORTS // we are building a shared lib/dll
+    #define ROSCONSOLE_CONSOLE_IMPL_DECL ROS_HELPER_EXPORT
   #else // we are using shared lib/dll
-    #define ROSCONSOLE_BACKEND_DECL ROS_HELPER_IMPORT
+    #define ROSCONSOLE_CONSOLE_IMPL_DECL ROS_HELPER_IMPORT
   #endif
 #else // ros is being built around static libraries
-  #define ROSCONSOLE_BACKEND_DECL
+  #define ROSCONSOLE_CONSOLE_IMPL_DECL
 #endif
 
+// declare interface for rosconsole implementations
 namespace ros
 {
 namespace console
 {
-
-namespace levels
-{
-enum Level
-{
-  Debug,
-  Info,
-  Warn,
-  Error,
-  Fatal,
-
-  Count
-};
-}
-typedef levels::Level Level;
-
-namespace backend
+namespace impl
 {
 
-ROSCONSOLE_BACKEND_DECL void notifyLoggerLevelsChanged();
+ROSCONSOLE_CONSOLE_IMPL_DECL void initialize();
 
-ROSCONSOLE_BACKEND_DECL extern void (*function_notifyLoggerLevelsChanged)();
+ROSCONSOLE_CONSOLE_IMPL_DECL void shutdown();
 
-ROSCONSOLE_BACKEND_DECL void print(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
+ROSCONSOLE_CONSOLE_IMPL_DECL void register_appender(LogAppender* appender);
 
-ROSCONSOLE_BACKEND_DECL extern void (*function_print)(void*, ::ros::console::Level, const char*, const char*, const char*, int);
+ROSCONSOLE_CONSOLE_IMPL_DECL void deregister_appender(LogAppender* appender);
 
-} // namespace backend
+ROSCONSOLE_CONSOLE_IMPL_DECL void print(void* handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
+
+ROSCONSOLE_CONSOLE_IMPL_DECL bool isEnabledFor(void* handle, ::ros::console::Level level);
+
+ROSCONSOLE_CONSOLE_IMPL_DECL void* getHandle(const std::string& name);
+
+ROSCONSOLE_CONSOLE_IMPL_DECL std::string getName(void* handle);
+
+ROSCONSOLE_CONSOLE_IMPL_DECL bool get_loggers(std::map<std::string, levels::Level>& loggers);
+
+ROSCONSOLE_CONSOLE_IMPL_DECL bool set_logger_level(const std::string& name, levels::Level level);
+
+} // namespace impl
 } // namespace console
 } // namespace ros
 
-#endif // ROSCONSOLE_CONSOLE_BACKEND_H
+#endif // ROSCONSOLE_CONSOLE_IMPL_H
