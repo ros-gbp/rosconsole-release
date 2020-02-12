@@ -1,3 +1,26 @@
+## rosconsole (noetic) - 1.13.15-1
+
+The packages in the `rosconsole` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic -t noetic rosconsole` on `Wed, 12 Feb 2020 19:07:08 -0000`
+
+The `rosconsole` package was released.
+
+Version of package(s) in repository `rosconsole`:
+
+- upstream repository: https://github.com/ros/rosconsole.git
+- release repository: https://github.com/ros-gbp/rosconsole-release.git
+- rosdistro version: `1.13.14-1`
+- old version: `1.13.14-1`
+- new version: `1.13.15-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.1`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.18.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## rosconsole (noetic) - 1.13.14-1
 
 The packages in the `rosconsole` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic -t noetic rosconsole` on `Wed, 12 Feb 2020 16:40:45 -0000`
