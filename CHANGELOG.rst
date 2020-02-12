@@ -2,6 +2,10 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.14 (2020-02-12)
+--------------------
+* add missing run dep for boost regex (`#37 <https://github.com/ros/rosconsole/issues/37>`_)
+
 1.13.13 (2020-02-11)
 --------------------
 * bump minimum CMake version to avoid CMP0048 warning (`#36 <https://github.com/ros/rosconsole/issues/36>`_)
