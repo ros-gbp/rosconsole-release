@@ -2,6 +2,28 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.13.16 (2020-07-20)
+--------------------
+* fix message in filter parameters (`#43 <https://github.com/ros/rosconsole/issues/43>`_)
+
+1.13.15 (2020-02-12)
+--------------------
+* export boost-regex-dev for now (`#38 <https://github.com/ros/rosconsole/issues/38>`_)
+
+1.13.14 (2020-02-12)
+--------------------
+* add missing run dep for boost regex (`#37 <https://github.com/ros/rosconsole/issues/37>`_)
+
+1.13.13 (2020-02-11)
+--------------------
+* bump minimum CMake version to avoid CMP0048 warning (`#36 <https://github.com/ros/rosconsole/issues/36>`_)
+
+1.13.12 (2020-02-11)
+--------------------
+* declare specific boost dependencies (`#35 <https://github.com/ros/rosconsole/issues/35>`_)
+* fix console printer to also print unknown levels (`#34 <https://github.com/ros/rosconsole/issues/34>`_)
+* fix level comparison for compatibility with upstream log4cxx (`#33 <https://github.com/ros/rosconsole/issues/33>`_)
+
 1.13.11 (2019-10-03)
 --------------------
 * direct WARN level messages to stderr (`#29 <https://github.com/ros/rosconsole/issues/29>`_)
