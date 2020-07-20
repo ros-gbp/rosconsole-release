@@ -1,6 +1,6 @@
 <package>
   <name>rosconsole</name>
-  <version>1.13.11</version>
+  <version>1.13.16</version>
   <description>ROS console output library.</description>
   <maintainer email="dthomas@osrfoundation.org">Dirk Thomas</maintainer>
   <license>BSD</license>
@@ -11,7 +11,9 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>apr</build_depend>
-  <build_depend>boost</build_depend>
+  <build_depend>libboost-regex-dev</build_depend>
+  <build_depend>libboost-system-dev</build_depend>
+  <build_depend>libboost-thread-dev</build_depend>
   <build_depend>cpp_common</build_depend>
   <build_depend>log4cxx</build_depend>
   <build_depend>rostime</build_depend>
@@ -19,6 +21,7 @@
 
   <run_depend>apr</run_depend>
   <run_depend>cpp_common</run_depend>
+  <run_depend>libboost-regex-dev</run_depend>
   <run_depend>log4cxx</run_depend>
   <run_depend>rosbuild</run_depend>
   <run_depend>rostime</run_depend>
