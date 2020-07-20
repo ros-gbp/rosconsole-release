@@ -1,3 +1,26 @@
+## rosconsole (melodic) - 1.13.16-1
+
+The packages in the `rosconsole` repository were released into the `melodic` distro by running `/usr/bin/bloom-release -r melodic -t melodic rosconsole` on `Mon, 20 Jul 2020 22:54:48 -0000`
+
+The `rosconsole` package was released.
+
+Version of package(s) in repository `rosconsole`:
+
+- upstream repository: https://github.com/ros/rosconsole.git
+- release repository: https://github.com/ros-gbp/rosconsole-release.git
+- rosdistro version: `1.13.11-1`
+- old version: `1.13.11-1`
+- new version: `1.13.16-1`
+
+Versions of tools used:
+
+- bloom version: `0.9.7`
+- catkin_pkg version: `0.4.22`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.2`
+- vcstools version: `0.1.42`
+
+
 ## rosconsole (noetic) - 1.14.1-1
 
 The packages in the `rosconsole` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic -t noetic rosconsole` on `Mon, 20 Jul 2020 22:53:52 -0000`
