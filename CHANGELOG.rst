@@ -2,17 +2,27 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.13.18 (2020-10-14)
---------------------
+1.14.4 (2025-04-10)
+-------------------
+* Finding boost dependencies is now required. (`#47 <https://github.com/ros/rosconsole/issues/47>`_)
+* Remove undesired blank spaces (`#52 <https://github.com/ros/rosconsole/issues/52>`_)
+* Contributors: H Singh, Zheng Qu
+
+1.14.3 (2020-10-14)
+-------------------
 * support NO_COLOR environment variable (`#46 <https://github.com/ros/rosconsole/issues/46>`_)
 
-1.13.17 (2020-08-06)
---------------------
+1.14.2 (2020-08-06)
+-------------------
 * check MSVC predefined macro (`#45 <https://github.com/ros/rosconsole/issues/45>`_)
 
-1.13.16 (2020-07-20)
---------------------
+1.14.1 (2020-07-20)
+-------------------
 * fix message in filter parameters (`#43 <https://github.com/ros/rosconsole/issues/43>`_)
+
+1.14.0 (2020-04-06)
+-------------------
+* add timestamp formatting for rosconsole (`#22 <https://github.com/ros/rosconsole/issues/22>`_)
 
 1.13.15 (2020-02-12)
 --------------------
