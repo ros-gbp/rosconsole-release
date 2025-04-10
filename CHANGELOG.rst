@@ -2,6 +2,12 @@
 Changelog for package rosconsole
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.14.4 (2025-04-10)
+-------------------
+* Finding boost dependencies is now required. (`#47 <https://github.com/ros/rosconsole/issues/47>`_)
+* Remove undesired blank spaces (`#52 <https://github.com/ros/rosconsole/issues/52>`_)
+* Contributors: H Singh, Zheng Qu
+
 1.14.3 (2020-10-14)
 -------------------
 * support NO_COLOR environment variable (`#46 <https://github.com/ros/rosconsole/issues/46>`_)
